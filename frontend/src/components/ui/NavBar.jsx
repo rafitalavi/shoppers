@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Navbar, Nav, NavDropdown, Container, Spinner, Alert } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container, Spinner, Alert, Badge } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-import api from "../../api"; // use the axios instance
+import { FaCartShopping } from "react-icons/fa6";
+import { useLocation } from "react-router-dom"; // ✅ import
+import api from "../../api";
+import styles from './NavBar.module.css'
 
 const NavBar = () => {
+  const location = useLocation(); // ✅ current route
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -36,16 +41,24 @@ const NavBar = () => {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const res = await api.get("/cart/count/");
+        setCartCount(res.data.count);
+      } catch {
+        setCartCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, []);
+
   const renderCategoriesDropdown = () => {
     if (loading) {
       return (
         <NavDropdown 
-          title={
-            <span className="d-flex align-items-center">
-              Categories
-              <Spinner animation="border" size="sm" className="ms-2" />
-            </span>
-          } 
+          title={<span className="d-flex align-items-center">Categories <Spinner animation="border" size="sm" className="ms-2" /></span>} 
           id="categories-dropdown"
           disabled
         >
@@ -66,6 +79,13 @@ const NavBar = () => {
 
     return (
       <NavDropdown title="Categories" id="categories-dropdown">
+        <LinkContainer to="/products">
+          <NavDropdown.Item className={location.pathname === "/products" ? "fw-bold text-primary" : "fw-bold"}>
+            All Products
+          </NavDropdown.Item>
+        </LinkContainer>
+        <NavDropdown.Divider />
+
         {categories.length === 0 ? (
           <NavDropdown.ItemText className="text-muted">
             No categories available
@@ -73,17 +93,17 @@ const NavBar = () => {
         ) : (
           categories.map(cat => (
             <div key={cat.id}>
-              {/* Category Header */}
               <LinkContainer to={`/category/${cat.slug}`}>
-                <NavDropdown.Item className="fw-bold text-dark">
-                  {cat.name} 
+                <NavDropdown.Item className={location.pathname === `/category/${cat.slug}` ? "fw-bold text-primary" : "fw-bold text-dark"}>
+                  {cat.name}
                 </NavDropdown.Item>
               </LinkContainer>
 
-              {/* Subcategories */}
               {cat.subcategories.map(sub => (
                 <LinkContainer key={sub.id} to={`/subcategory/${sub.slug}`}>
-                  <NavDropdown.Item className="ps-4">{sub.name}</NavDropdown.Item>
+                  <NavDropdown.Item className={location.pathname === `/subcategory/${sub.slug}` ? "ps-4 text-primary" : "ps-4"}>
+                    {sub.name}
+                  </NavDropdown.Item>
                 </LinkContainer>
               ))}
 
@@ -113,27 +133,42 @@ const NavBar = () => {
           <Navbar.Collapse id="main-navbar">
             <Nav className="me-auto">
               <LinkContainer to="/">
-                <Nav.Link>Home</Nav.Link>
+                <Nav.Link className={location.pathname === "/" ? "text-primary fw-bold" : ""}>Home</Nav.Link>
               </LinkContainer>
 
               <LinkContainer to="/products">
-                <Nav.Link>All Products</Nav.Link>
+                <Nav.Link className={location.pathname === "/products" ? "text-primary fw-bold" : ""}>All Products</Nav.Link>
               </LinkContainer>
 
               {renderCategoriesDropdown()}
 
               <LinkContainer to="/deals">
-                <Nav.Link className="text-danger">Special Offers</Nav.Link>
+                <Nav.Link className={location.pathname === "/deals" ? "text-danger fw-bold" : "text-danger"}>Special Offers</Nav.Link>
               </LinkContainer>
             </Nav>
 
             <Nav className="align-items-center">
+              <LinkContainer to="/cart">
+                <Nav.Link className="position-relative">
+                  <FaCartShopping size={20} />
+                  {cartCount > 0 && (
+                    <Badge 
+                      bg="danger" 
+                      pill 
+                      className="position-absolute top-0 start-100 translate-middle"
+                    >
+                      {cartCount}
+                    </Badge>
+                  )}
+                </Nav.Link>
+              </LinkContainer>
+
               <LinkContainer to="/signup">
-                <Nav.Link>Sign Up</Nav.Link>
+                <Nav.Link className={location.pathname === "/signup" ? "text-primary fw-bold" : ""}>Sign Up</Nav.Link>
               </LinkContainer>
 
               <LinkContainer to="/login">
-                <Nav.Link>Log In</Nav.Link>
+                <Nav.Link className={location.pathname === "/login" ? "text-primary fw-bold" : ""}>Log In</Nav.Link>
               </LinkContainer>
             </Nav>
           </Navbar.Collapse>
