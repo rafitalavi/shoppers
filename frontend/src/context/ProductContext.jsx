@@ -1,51 +1,52 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api';
+import Error from '../components/ui/Error';
 
 const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
-  const [latestProducts, setLatestProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [loadingLatest, setLoadingLatest] = useState(true);
   const [loadingAll, setLoadingAll] = useState(true);
 
-  // Fetch latest products
-  useEffect(() => {
-    const fetchLatest = async () => {
-      setLoadingLatest(true);
-      try {
-        const res = await api.get('/products/?latest=1');
-        setLatestProducts(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error('Failed to fetch latest products:', err);
-        setLatestProducts([]);
-      } finally {
-        setLoadingLatest(false);
-      }
-    };
-    fetchLatest();
-  }, []);
+  // ✅ Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch all products (paginated or not)
-  useEffect(() => {
-    const fetchAll = async () => {
-      setLoadingAll(true);
-      try {
-        const res = await api.get('/products/');
-        // DRF paginated result has `results`
-        setAllProducts(res.data.results || []);
-      } catch (err) {
-        console.error('Failed to fetch all products:', err);
-        setAllProducts([]);
-      } finally {
-        setLoadingAll(false);
+  const fetchProducts = async (page = 1) => {
+    setLoadingAll(true);
+    try {
+      const res = await api.get(`/products/?page=${page}`);
+      const data = res.data;
+
+      setAllProducts(data.results || []);
+      setCurrentPage(page);
+
+      // Django DRF pagination gives count + page_size
+      if (data.count && data.results) {
+        setTotalPages(Math.ceil(data.count / data.results.length));
       }
-    };
-    fetchAll();
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      setAllProducts([]);
+    } finally {
+      setLoadingAll(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(1);
   }, []);
 
   return (
-    <ProductContext.Provider value={{ latestProducts, loadingLatest, allProducts, loadingAll }}>
+    <ProductContext.Provider
+      value={{
+        allProducts,
+        loadingAll,
+        currentPage,
+        totalPages,
+        fetchProducts,
+      }}
+    >
       {children}
     </ProductContext.Provider>
   );

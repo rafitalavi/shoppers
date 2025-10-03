@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api";
-import { FiShoppingCart } from "react-icons/fi";
+import ProductCard from "../components/products/ProductCard";
+import PoductPagePlaceHolder from "../components/products/PoductPagePlaceHolder";
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -11,7 +12,7 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await api.get(`/products/${slug}/`); // <-- Django URL for details
+        const res = await api.get(`/products/${slug}/`);
         setProduct(res.data);
       } catch (error) {
         console.error("Failed to fetch product details:", error);
@@ -23,7 +24,7 @@ const ProductDetailPage = () => {
     fetchProduct();
   }, [slug]);
 
-  if (loading) return <div className="container py-5 text-center">Loading...</div>;
+  if (loading) return <PoductPagePlaceHolder/>;
   if (!product) return <div className="container py-5 text-center">Product not found</div>;
 
   return (
@@ -67,16 +68,22 @@ const ProductDetailPage = () => {
               ))}
             </div>
           )}
-
-          <button
-            className="btn btn-dark btn-lg mt-3"
-            disabled={product.stock <= 0}
-          >
-            <FiShoppingCart className="me-2" />
-            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
-          </button>
         </div>
       </div>
+
+      {/* Related Products */}
+      {product.related_products && product.related_products.length > 0 && (
+        <div className="mt-5">
+          <h3 className="mb-4">Related Products</h3>
+          <div className="row g-3">
+            {product.related_products.map((rel) => (
+              <div key={rel.id} className="col-6 col-md-3">
+                <ProductCard product={rel} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

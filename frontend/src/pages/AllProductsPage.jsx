@@ -1,19 +1,19 @@
 import React from 'react';
 import { useProduct } from '../context/ProductContext';
-import ProductCard from '../components/ProductCard';
+import ProductCard from '../components/products/ProductCard';
+import PlaceHolderComponent from '../components/ui/PlaceHolderComponent';
 
 const AllProductsPage = () => {
   const { allProducts, loadingAll } = useProduct();
 
   if (loadingAll) {
-    return <div className="text-center my-5">Loading all products...</div>;
+    // ⏳ Show skeleton loaders while data is being fetched
+    return <PlaceHolderComponent count={16} />;
   }
 
   return (
     <div className="container py-4">
-<h2 className="mb-4 text-center py-3 bg-light fw-bold">
-  All Products
-</h2>
+      <h2 className="mb-4 text-center py-3 bg-light fw-bold">All Products</h2>
 
       {allProducts.length === 0 ? (
         <p className="text-center">No products available.</p>

@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Product, Category, SubCategory
-from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer
+from .serializers import ProductSerializer, CategorySerializer, SubCategorySerializer , ProductDetailSerializer
 from django.shortcuts import get_object_or_404
 
 # -------------------------
@@ -67,7 +67,7 @@ def product_detail(request, slug):
     Returns a single product by slug
     """
     product = get_object_or_404(Product, slug=slug)
-    serializer = ProductSerializer(product, context={'request': request})
+    serializer = ProductDetailSerializer(product, context={'request': request})
     return Response(serializer.data)
 
 

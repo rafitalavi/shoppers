@@ -1,57 +1,37 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-// ✅ UI Components
-import NavBar from "./components/ui/NavBar";
-import Footer from "./components/ui/Footer";
 
-// ✅ Home Page Components
-import Header from "./components/home/Header";
-import HeroSection from "./components/home/HeroSection";
-import CardContainerCategory from "./components/home/CardcontainerCatecogy";
-import LatestProductsCarousel from "./components/home/CardContainerProduct";
+// ✅ Layout
+import MainLayout from "./layouts/Mainlayout";
 
 // ✅ Context Providers
 import { CategoryProvider } from "./context/CategoryContext";
 import { SubcategoryProvider } from "./context/SubcategoryContext";
 import { ProductProvider } from "./context/ProductContext";
 
-// ✅ Example Pages
+// ✅ Pages
+import Homepage from "./pages/Homepage";
+import AllProductsPage from "./pages/AllProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
-import AllProductsPage from './pages/AllProductsPage';
+import Error from "./components/ui/Error";
 
 const App = () => {
   return (
     <CategoryProvider>
       <SubcategoryProvider>
         <ProductProvider>
-          <div className="d-flex flex-column min-vh-100">
-            <NavBar />
-            <main className="flex-grow-1">
-              <Routes>
-                {/* 🏠 Home */}
-                <Route
-                  path="/"
-                  element={
-                    <>
-                      <Header />
-                      <HeroSection />
-                      <LatestProductsCarousel />
-                      <CardContainerCategory />
-                      
-                    </>
-                  }
-                />
-                <Route path="/products" element={<AllProductsPage />} />
-                {/* 🛍 Product Details */}
-                <Route path="/product/:slug" element={<ProductDetailPage />} />
+          <Routes>
+            {/* ✅ Wrap all public pages inside MainLayout */}
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Homepage />} />
+              <Route path="products" element={<AllProductsPage />} />
+              <Route path="product/:slug" element={<ProductDetailPage />} />
 
-                {/* 404 Not Found (Optional) */}
-                <Route path="*" element={<h1 className="text-center mt-5">404 - Page Not Found</h1>} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+             
+             <Route path="*" element={<Error />} /> {/* Catch-all 404 */}
+            </Route>
+          </Routes>
         </ProductProvider>
       </SubcategoryProvider>
     </CategoryProvider>
